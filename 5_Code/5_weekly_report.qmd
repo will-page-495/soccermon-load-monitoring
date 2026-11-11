@@ -1,0 +1,320 @@
+---
+pagetitle: "Weekly squad report"
+params:
+  week_end: "2021-09-15"
+  team: "All"
+format:
+  html:
+    theme: cosmo
+    embed-resources: true
+    page-layout: full
+    fig-width: 10
+    fig-height: 4.2
+    fig-dpi: 150
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{=html}
+<style>
+  body { background: #F4F6F8; font-family: "Segoe UI", system-ui, sans-serif; color: #1F2A36; }
+  main.content, #quarto-content { max-width: 1150px; margin: 0 auto; }
+  .banner { background: #1F4E79; color: #FFFFFF; padding: 26px 30px; border-radius: 12px; margin: 10px 0 18px; }
+  .banner-title { display: block; font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+  .banner-sub { display: block; font-size: 1.05rem; opacity: 0.85; margin-top: 4px; }
+  .kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 18px; }
+  .kpi { background: #FFFFFF; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-top: 4px solid #1F4E79; }
+  .kpi.red { border-top-color: #C0392B; }
+  .kpi.orange { border-top-color: #E67E22; }
+  .kpi.light { border-top-color: #5FB3E6; }
+  .kpi-value { display: block; font-size: 1.75rem; font-weight: 700; line-height: 1.1; }
+  .kpi-label { display: block; font-size: 0.85rem; color: #5A6270; margin-top: 2px; }
+  .kpi-note { display: block; font-size: 0.78rem; color: #5A6270; margin-top: 4px; }
+  .panel { background: #FFFFFF; border-radius: 10px; padding: 18px 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 18px; }
+  .panel h2 { color: #1F4E79; font-size: 1.2rem; font-weight: 700; margin: 0 0 4px; border: none; }
+  .panel .lead { color: #5A6270; font-size: 0.9rem; margin-bottom: 10px; }
+  .summary { background: #FFFFFF; border-left: 5px solid #1F4E79; border-radius: 8px; padding: 14px 18px; font-size: 1.05rem; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .chip { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; color: #FFFFFF; white-space: nowrap; }
+  .chip-speak-to-first { background: #C0392B; }
+  .chip-monitor { background: #E67E22; }
+  .chip-ok { background: #1F4E79; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .footer { color: #5A6270; font-size: 0.8rem; margin: 10px 0 30px; }
+  @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } .two-col { grid-template-columns: 1fr; } }
+</style>
+```
+
+```{r}
+#| include: false
+library(readxl); library(dplyr); library(tidyr); library(ggplot2)
+library(gt); library(ggrepel); library(scales)
+
+# ---- Data ----
+excel_path <- "../6_Data/1_SoccerMon_Clean.xlsx"
+players <- read_excel(excel_path, sheet = "Players")
+daily   <- read_excel(excel_path, sheet = "Daily") %>%
+  mutate(Date = as.Date(Date)) %>%
+  left_join(select(players, Player, Label), by = "Player")
+
+num_cols <- c("DailyLoad", "WeeklyLoad", "ACWR", "Monotony",
+              "Fatigue", "Fatigue_z", "Soreness_z", "SleepQuality_z", "Stress_z")
+daily <- daily %>% mutate(across(any_of(num_cols), ~ suppressWarnings(as.numeric(.x))))
+
+# ---- Style ----
+navy <- "#1F4E79"; light <- "#5FB3E6"; red <- "#C0392B"; orange <- "#E67E22"; grey <- "#5A6270"
+status_cols <- c("Speak to first" = red, "Monitor" = orange, "OK" = navy)
+theme_rep <- theme_minimal(base_size = 11) +
+  theme(panel.grid.minor = element_blank(), legend.title = element_blank(),
+        legend.position = "top", axis.title = element_text(colour = grey),
+        strip.text = element_text(face = "bold", colour = "#1F2A36"))
+
+chip <- function(x) paste0("<span class='chip chip-", tolower(gsub(" ", "-", x)), "'>", x, "</span>")
+gt_style <- function(g) {
+  g %>% tab_options(table.width = pct(100), table.font.size = px(13),
+                    column_labels.font.weight = "bold", column_labels.background.color = "#F4F6F8",
+                    table.border.top.style = "hidden", table.border.bottom.style = "hidden",
+                    data_row.padding = px(6))
+}
+
+# ---- The week ----
+end_day   <- as.Date(params$week_end)
+start_day <- end_day - 6
+prev_end  <- end_day - 7
+team_label <- if (params$team == "All") "All players" else params$team
+pool <- if (params$team == "All") daily else filter(daily, Team == params$team)
+
+# Wellness this week: reports and the 7-day index (average of four z-scores)
+wk <- pool %>%
+  filter(Date >= start_day, Date <= end_day) %>%
+  group_by(Player) %>%
+  summarise(Reports = sum(!is.na(Fatigue)),
+            across(c(Fatigue_z, Soreness_z, SleepQuality_z, Stress_z), ~ mean(.x, na.rm = TRUE)),
+            .groups = "drop") %>%
+  mutate(across(c(Fatigue_z, Soreness_z, SleepQuality_z, Stress_z), ~ ifelse(is.nan(.x), NA, .x))) %>%
+  rowwise() %>%
+  mutate(Wellness7d = mean(c(Fatigue_z, Soreness_z, SleepQuality_z, Stress_z), na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(Wellness7d = ifelse(is.nan(Wellness7d), NA, Wellness7d)) %>%
+  select(Player, Reports, Wellness7d)
+
+prev <- pool %>% filter(Date == prev_end) %>% select(Player, PrevLoad = WeeklyLoad)
+
+squad <- pool %>%
+  filter(Date == end_day, WeeklyLoad > 0) %>%
+  left_join(wk, by = "Player") %>%
+  left_join(prev, by = "Player") %>%
+  mutate(Reports = coalesce(Reports, 0L),
+         Change  = ifelse(!is.na(PrevLoad) & PrevLoad > 0, WeeklyLoad / PrevLoad - 1, NA),
+         f_high  = coalesce(ACWR > 1.5, FALSE),
+         f_low   = coalesce(ACWR > 0 & ACWR < 0.8, FALSE),
+         f_well  = coalesce(Wellness7d < -0.5, FALSE),
+         f_mono  = coalesce(Monotony > 2, FALSE),
+         f_none  = Reports == 0,
+         Status  = case_when((f_high | f_low) & f_well ~ "Speak to first",
+                             f_high | f_low | f_well | f_mono ~ "Monitor",
+                             TRUE ~ "OK"))
+
+reason_names <- c("ACWR above 1.5", "ACWR below 0.8", "Low wellness", "Monotony above 2", "No wellness reports")
+squad$Reason <- apply(as.matrix(squad[, c("f_high", "f_low", "f_well", "f_mono", "f_none")]), 1,
+                      function(r) { x <- reason_names[as.logical(r)]; if (length(x) == 0) "" else paste(x, collapse = " · ") })
+
+# ---- Headline numbers ----
+n_players  <- nrow(squad)
+squad_load <- sum(squad$WeeklyLoad, na.rm = TRUE)
+prev_total <- pool %>% filter(Date == prev_end, WeeklyLoad > 0) %>% summarise(s = sum(WeeklyLoad)) %>% pull(s)
+load_chg   <- if (length(prev_total) == 1 && prev_total > 0) squad_load / prev_total - 1 else NA
+avg_acwr   <- mean(squad$ACWR[squad$ACWR > 0], na.rm = TRUE)
+n_speak    <- sum(squad$Status == "Speak to first")
+n_monitor  <- sum(squad$Status == "Monitor")
+week_comp  <- sum(squad$Reports) / (n_players * 7)
+no_reports <- squad %>% filter(f_none) %>% arrange(Label) %>% pull(Label)
+
+chg_text <- if (is.na(load_chg)) "no comparison available" else
+  paste0(ifelse(load_chg >= 0, "up ", "down "), percent(abs(load_chg), accuracy = 1), " on last week")
+
+review <- squad %>%
+  filter(Status != "OK") %>%
+  arrange(factor(Status, levels = c("Speak to first", "Monitor")), desc(ACWR))
+n_top <- min(nrow(review), 9)
+```
+
+::: {.banner}
+[Weekly squad report]{.banner-title}
+[Week ending `r format(end_day, "%A %d %B %Y")` · `r team_label`]{.banner-sub}
+:::
+
+:::: {.kpis}
+::: {.kpi}
+[`r n_players`]{.kpi-value}
+[Players trained]{.kpi-label}
+:::
+::: {.kpi .light}
+[`r comma(squad_load)` AU]{.kpi-value}
+[Squad load this week]{.kpi-label}
+[`r chg_text`]{.kpi-note}
+:::
+::: {.kpi}
+[`r sprintf("%.2f", avg_acwr)`]{.kpi-value}
+[Average ACWR]{.kpi-label}
+[Safe range 0.8–1.5]{.kpi-note}
+:::
+::: {.kpi .red}
+[`r n_speak`]{.kpi-value}
+[Speak to first]{.kpi-label}
+[plus `r n_monitor` to monitor]{.kpi-note}
+:::
+::: {.kpi .orange}
+[`r percent(week_comp, accuracy = 1)`]{.kpi-value}
+[Wellness reporting]{.kpi-label}
+[`r length(no_reports)` players sent none]{.kpi-note}
+:::
+::::
+
+::: {.summary}
+**This week:** squad load was `r chg_text`. **`r n_speak`** `r ifelse(n_speak == 1, "player has", "players have")` both a load and a wellness flag and should be spoken to first; **`r n_monitor`** more `r ifelse(n_monitor == 1, "needs", "need")` monitoring.
+:::
+
+::: {.panel}
+## Players to review
+
+[Sorted by priority. "Speak to first" means load outside the safe range *and* wellness more than 0.5 SD below the player's normal.]{.lead}
+
+```{r}
+if (nrow(review) == 0) {
+  cat("No players flagged this week.")
+} else {
+  review %>%
+    transmute(Player = Label, Team, `Weekly load` = WeeklyLoad, `vs last week` = Change,
+              ACWR, `Wellness (7d)` = Wellness7d, Status, `Why flagged` = Reason) %>%
+    gt() %>%
+    fmt_number(columns = `Weekly load`, decimals = 0) %>%
+    fmt_percent(columns = `vs last week`, decimals = 0, force_sign = TRUE) %>%
+    fmt_number(columns = c(ACWR, `Wellness (7d)`), decimals = 2) %>%
+    sub_missing(missing_text = "–") %>%
+    data_color(columns = ACWR,
+               fn = scales::col_bin(c("#FBE3C4", "#FFFFFF", "#F5C6C0"), domain = c(0, 100),
+                                    bins = c(0, 0.8, 1.5, 100), na.color = "#FFFFFF")) %>%
+    text_transform(locations = cells_body(columns = Status), fn = chip) %>%
+    tab_style(style = cell_text(color = grey, size = px(12)),
+              locations = cells_body(columns = `Why flagged`)) %>%
+    gt_style()
+}
+```
+:::
+
+:::: {.two-col}
+::: {.panel}
+## Load vs wellness
+
+[Each dot is a player. Shaded areas are outside the safe range.]{.lead}
+
+```{r}
+#| fig-width: 5.4
+#| fig-height: 4.4
+xr <- c(0, max(2, max(squad$ACWR, na.rm = TRUE) + 0.1))
+yr <- range(squad$Wellness7d, na.rm = TRUE) + c(-0.25, 0.25)
+ggplot(squad, aes(ACWR, Wellness7d, colour = Status)) +
+  annotate("rect", xmin = 1.5, xmax = xr[2], ymin = yr[1], ymax = yr[2], fill = red, alpha = 0.07) +
+  annotate("rect", xmin = xr[1], xmax = 0.8, ymin = yr[1], ymax = yr[2], fill = orange, alpha = 0.07) +
+  annotate("rect", xmin = xr[1], xmax = xr[2], ymin = yr[1], ymax = -0.5, fill = red, alpha = 0.07) +
+  geom_vline(xintercept = c(0.8, 1.5), linetype = "dashed", colour = grey) +
+  geom_hline(yintercept = -0.5, linetype = "dashed", colour = grey) +
+  geom_point(size = 2.8) +
+  geom_text_repel(data = filter(squad, Status != "OK"), aes(label = Label),
+                  size = 3, show.legend = FALSE, max.overlaps = 20) +
+  scale_colour_manual(values = status_cols) +
+  coord_cartesian(xlim = xr, ylim = yr, expand = FALSE) +
+  labs(x = "ACWR (this week vs last 4 weeks)", y = "Wellness vs normal (7-day)") +
+  theme_rep
+```
+:::
+
+::: {.panel}
+## Squad load, last 8 weeks
+
+[Total weekly load by team. This week is highlighted.]{.lead}
+
+```{r}
+#| fig-width: 5.4
+#| fig-height: 4.4
+weeks8 <- pool %>%
+  filter(Date > end_day - 56, Date <= end_day) %>%
+  mutate(WeekEnd = end_day - 7 * floor(as.numeric(end_day - Date) / 7)) %>%
+  group_by(WeekEnd, Team) %>%
+  summarise(Load = sum(DailyLoad, na.rm = TRUE), .groups = "drop") %>%
+  mutate(This = WeekEnd == end_day)
+
+ggplot(weeks8, aes(WeekEnd, Load, fill = Team, alpha = This)) +
+  geom_col(width = 5.5) +
+  scale_fill_manual(values = c("Team A" = navy, "Team B" = light)) +
+  scale_alpha_manual(values = c(`TRUE` = 1, `FALSE` = 0.45), guide = "none") +
+  scale_x_date(date_labels = "%d %b", breaks = unique(weeks8$WeekEnd)) +
+  scale_y_continuous(labels = comma) +
+  labs(x = "Week ending", y = "Squad load (AU)") +
+  theme_rep
+```
+:::
+::::
+
+```{r}
+#| include: false
+top <- head(review, n_top)
+fig_h <- max(2.6, ceiling(n_top / 3) * 2.3)
+```
+
+::: {.panel}
+## Last four weeks for flagged players
+
+[Daily training load. The week under review is shaded.]{.lead}
+
+```{r}
+#| fig-height: !expr fig_h
+if (n_top == 0) {
+  cat("No players flagged this week.")
+} else {
+  pool %>%
+    filter(Player %in% top$Player, Date > end_day - 28, Date <= end_day) %>%
+    mutate(Label = factor(Label, levels = top$Label)) %>%
+    ggplot(aes(Date, DailyLoad)) +
+    annotate("rect", xmin = start_day - 0.5, xmax = end_day + 0.5, ymin = -Inf, ymax = Inf,
+             fill = light, alpha = 0.18) +
+    geom_col(fill = navy, width = 0.8) +
+    facet_wrap(~ Label, ncol = 3) +
+    scale_x_date(date_labels = "%d %b") +
+    scale_y_continuous(labels = comma) +
+    labs(x = NULL, y = "Daily load (AU)") +
+    theme_rep
+}
+```
+:::
+
+::: {.panel}
+## Wellness reporting
+
+[`r percent(week_comp, accuracy = 1)` of possible reports were completed this week. Players who sent none: **`r if (length(no_reports) == 0) "none, everyone reported" else paste(no_reports, collapse = ", ")`**.]{.lead}
+:::
+
+::: {.callout-note collapse="true" title="Full squad this week (click to expand)"}
+```{r}
+squad %>%
+  arrange(desc(ACWR)) %>%
+  transmute(Player = Label, Team, `Weekly load` = WeeklyLoad, ACWR, Monotony,
+            `Wellness (7d)` = Wellness7d, Reports, Status) %>%
+  gt() %>%
+  fmt_number(columns = `Weekly load`, decimals = 0) %>%
+  fmt_number(columns = c(ACWR, Monotony, `Wellness (7d)`), decimals = 2) %>%
+  sub_missing(missing_text = "–") %>%
+  data_color(columns = ACWR,
+             fn = scales::col_bin(c("#FBE3C4", "#FFFFFF", "#F5C6C0"), domain = c(0, 100),
+                                  bins = c(0, 0.8, 1.5, 100), na.color = "#FFFFFF")) %>%
+  text_transform(locations = cells_body(columns = Status), fn = chip) %>%
+  gt_style()
+```
+:::
+
+::: {.footer}
+**How flags work:** ACWR = acute (7-day) ÷ chronic (28-day) load, with the safe range taken as 0.8–1.5. Wellness (7d) = average of fatigue, soreness, sleep quality and stress z-scores over the week, where 0 is the player's own normal. Monotony = mean ÷ SD of daily load over the week. Flags prompt a conversation; they are not a diagnosis.<br>
+Data: SoccerMon (Midoglu et al., CC BY 4.0). Report generated `r format(Sys.Date(), "%d %B %Y")` with R and Quarto by Will Page.
+:::

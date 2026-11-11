@@ -1,0 +1,13 @@
+Injuries included: 20 of 29
+
+	Comparison of Poisson rates
+
+data:  c(hi$Injuries, ref$Injuries) time base: c(hi$`Player-days`, ref$`Player-days`)
+count1 = 6, expected count1 = 3.2491, p-value = 0.1133
+alternative hypothesis: true rate ratio is not equal to 1
+95 percent confidence interval:
+ 0.7033367 7.1506028
+sample estimates:
+rate ratio 
+  2.354625 
+

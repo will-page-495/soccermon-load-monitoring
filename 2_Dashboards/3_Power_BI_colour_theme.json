@@ -1,0 +1,19 @@
+{
+  "name": "SoccerMon Performance",
+  "dataColors": ["#1F4E79", "#5FB3E6", "#E07A5F", "#81B29A", "#F2B880", "#6C7A89", "#9B5DE5", "#2A9D8F"],
+  "background": "#FFFFFF",
+  "foreground": "#1B2733",
+  "tableAccent": "#1F4E79",
+  "good": "#2E7D5B",
+  "neutral": "#F2B880",
+  "bad": "#C0392B",
+  "maximum": "#1F4E79",
+  "center": "#F7F7F7",
+  "minimum": "#C0392B",
+  "textClasses": {
+    "callout": { "fontFace": "Segoe UI Semibold", "fontSize": 26, "color": "#1B2733" },
+    "title": { "fontFace": "Segoe UI Semibold", "fontSize": 12, "color": "#1B2733" },
+    "header": { "fontFace": "Segoe UI Semibold", "fontSize": 12, "color": "#1B2733" },
+    "label": { "fontFace": "Segoe UI", "fontSize": 10, "color": "#5B6672" }
+  }
+}

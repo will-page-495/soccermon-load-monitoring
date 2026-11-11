@@ -1,0 +1,24 @@
+/*-- scss:defaults --*/
+$primary: #1F4E79;
+$navbar-bg: #1F4E79;
+$body-bg: #F4F6F8;
+$font-family-sans-serif: "Segoe UI", system-ui, sans-serif;
+
+/*-- scss:rules --*/
+.card { border: none; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.card-header { background-color: #FFFFFF; font-weight: 600; font-size: 0.95rem; color: #1F2A36;
+               border-bottom: 1px solid #ECEFF3; padding: 0.45rem 0.9rem; }
+
+/* Slim value boxes: white text, no icons */
+.bslib-value-box { border-radius: 8px; }
+.bslib-value-box, .bslib-value-box .value-box-title, .bslib-value-box .value-box-value { color: #FFFFFF !important; }
+.bslib-value-box .value-box-title { font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.1rem; }
+.bslib-value-box .value-box-value { font-size: 1.9rem; font-weight: 600; line-height: 1.1; }
+.bslib-value-box .value-box-area { padding: 0.6rem 1rem; justify-content: center; }
+
+/* Text, tables and images fit their cards */
+.card-body p, .card-body li { font-size: 0.9rem; line-height: 1.45; }
+table.dataTable { font-size: 0.84rem; }
+table.dataTable thead th { font-weight: 600; }
+.card-body img { max-height: 100%; max-width: 100%; width: auto; height: auto;
+                 object-fit: contain; display: block; margin: 0 auto; }

@@ -1,0 +1,8 @@
+.Rproj.user/
+.Rhistory
+.RData
+.quarto/
+*_files/
+~$*
+.DS_Store
+Thumbs.db
