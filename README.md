@@ -11,7 +11,7 @@ Short on time? Read them in this order:
 | # | Look at | Time | What it is |
 |---|---|---|---|
 | 1 | [One-page summary](1_Reports/1_One_Page_Summary.png) | 1 min | The project and its three main findings on one page (shown above) |
-| 2 | [Power BI dashboard](4_Screenshots/README.md) | 3 min | Every page of the five-page Power BI dashboard, with what each one shows |
+| 2 | [Power BI dashboard](4_Screenshots/README.md) | 3 min | All five pages of the Power BI dashboard, with what each one shows |
 | 3 | [Live R dashboard](https://will-page-495.github.io/soccermon-load-monitoring/2_Dashboards/1_R_Dashboard.html) | 3 min | Interactive dashboard in your browser: overview, weekly monitor, injuries and statistics |
 | 4 | [Full report](1_Reports/2_Full_Report.pdf) | 10 min | Page 1 is a plain-English summary for coaches; the rest is the technical report |
 | 5 | [Case study](1_Reports/3_Case_Study_Return_From_Knee_Injury.pdf) | 3 min | One player's return from a major knee injury, and what the monitoring caught |
@@ -19,10 +19,10 @@ Short on time? Read them in this order:
 
 ## The Power BI dashboard
 
-**Weekly monitor:** players outside the staff-set ACWR range are flagged in red, and one slider changes the range for every visual.
+**Weekly monitor:** every player's load, ACWR and wellness for the week, with high-risk values flagged red. One slider sets the safe ACWR range for every visual.
 ![Power BI load and wellness](4_Screenshots/03_Power_BI_load_and_wellness.png)
 
-**Player profile:** right-click any player to open her full history of load, wellness and injuries.
+**Player profile:** right-click any player to open her full history of load, wellness and injuries, with each injury marked.
 ![Power BI player profile](4_Screenshots/08_Power_BI_player_profile.png)
 
 [See every page of the Power BI dashboard →](4_Screenshots/README.md)
