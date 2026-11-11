@@ -65,4 +65,4 @@ All data is self-reported, and reporting was uneven between players and teams. W
 
 ## Author
 
-Will Page, Sport & Exercise Science, University of Bath · [LinkedIn link]
+Will Page, Sport & Exercise Science, University of Bath · https://www.linkedin.com/in/will-page-/
