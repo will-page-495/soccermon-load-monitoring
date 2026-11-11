@@ -11,10 +11,21 @@ Short on time? Read them in this order:
 | # | Look at | Time | What it is |
 |---|---|---|---|
 | 1 | [One-page summary](1_Reports/1_One_Page_Summary.png) | 1 min | The project and its three main findings on one page (shown above) |
-| 2 | [Live R dashboard]([your dashboard link]) | 3 min | Interactive dashboard: overview, weekly monitor, injuries and statistics |
-| 3 | [Full report](1_Reports/2_Full_Report.pdf) | 10 min | Page 1 is a plain-English summary for coaches; the rest is the technical report |
-| 4 | [Case study](1_Reports/3_Case_Study_Return_From_Knee_Injury.pdf) | 3 min | One player's return from a major knee injury, and what the monitoring caught |
-| 5 | [Screenshots](4_Screenshots) | 2 min | Every page of the Power BI dashboard, the R dashboard and the weekly report |
+| 2 | [Power BI dashboard](4_Screenshots/README.md) | 3 min | Every page of the five-page Power BI dashboard, with what each one shows |
+| 3 | [Live R dashboard](https://will-page-495.github.io/soccermon-load-monitoring/2_Dashboards/1_R_Dashboard.html) | 3 min | Interactive dashboard in your browser: overview, weekly monitor, injuries and statistics |
+| 4 | [Full report](1_Reports/2_Full_Report.pdf) | 10 min | Page 1 is a plain-English summary for coaches; the rest is the technical report |
+| 5 | [Case study](1_Reports/3_Case_Study_Return_From_Knee_Injury.pdf) | 3 min | One player's return from a major knee injury, and what the monitoring caught |
+| 6 | [Sample weekly report](https://will-page-495.github.io/soccermon-load-monitoring/3_Weekly_Reports/1_Week_ending_2021-09-15_All_players.html) | 2 min | The automated Monday report: who to speak to first and why. Also for [Team A](https://will-page-495.github.io/soccermon-load-monitoring/3_Weekly_Reports/2_Week_ending_2021-03-31_Team_A.html) and [Team B](https://will-page-495.github.io/soccermon-load-monitoring/3_Weekly_Reports/3_Week_ending_2020-10-14_Team_B.html) |
+
+## The Power BI dashboard
+
+**Weekly monitor:** players outside the staff-set ACWR range are flagged in red, and one slider changes the range for every visual.
+![Power BI load and wellness](4_Screenshots/03_Power_BI_load_and_wellness.png)
+
+**Player profile:** right-click any player to open her full history of load, wellness and injuries.
+![Power BI player profile](4_Screenshots/08_Power_BI_player_profile.png)
+
+[See every page of the Power BI dashboard →](4_Screenshots/README.md)
 
 ## Key findings
 
@@ -39,9 +50,9 @@ Short on time? Read them in this order:
 | Folder | What's in it | How to open it |
 |---|---|---|
 | [1_Reports](1_Reports) | One-page summary, full report, case study, and a one-page briefing for each department (physio, S&C, psychology, nutrition, coaches) | Click any file to view it on GitHub |
-| [2_Dashboards](2_Dashboards) | 1: the R dashboard. 2: the Power BI dashboard. 3: its colour theme | R dashboard: use the live link above. Power BI: download and open in Power BI Desktop (free) |
-| [3_Weekly_Reports](3_Weekly_Reports) | Three sample weekly squad reports: all players, Team A (the week of the case-study injury), and Team B | Download and open in any browser |
-| [4_Screenshots](4_Screenshots) | 01–08 Power BI, 09–12 R dashboard, 13–15 weekly report | Click any image |
+| [2_Dashboards](2_Dashboards) | 1: the R dashboard. 2: the Power BI dashboard. 3: its colour theme | R dashboard: [open the live version](https://will-page-495.github.io/soccermon-load-monitoring/2_Dashboards/1_R_Dashboard.html). Power BI: download and open in Power BI Desktop (free) |
+| [3_Weekly_Reports](3_Weekly_Reports) | Three sample weekly squad reports: all players, Team A (the week of the case-study injury), and Team B | Use the live links in "Where to start" |
+| [4_Screenshots](4_Screenshots/README.md) | 01–08 Power BI, 09–12 R dashboard, 13–15 weekly report | [See them all on one page](4_Screenshots/README.md) |
 | [5_Code](5_Code) | Every code file, numbered in the order it runs: 1–3 the R analysis, 4–5 the Quarto source for the dashboard and weekly report, 6 renders the sample reports, 7 the dashboard styling. `results/` holds the charts and results they produce, numbered to match | Open in RStudio |
 | [6_Data](6_Data) | 1: the cleaned workbook built in Power Query, used by Power BI and R. 2: the data dictionary (every table and column explained). 3: the data licence and credit | Open the workbook in Excel; the other two open on GitHub |
 
@@ -65,4 +76,4 @@ All data is self-reported, and reporting was uneven between players and teams. W
 
 ## Author
 
-Will Page, Sport & Exercise Science, University of Bath · https://www.linkedin.com/in/will-page-/
+Will Page, Sport & Exercise Science, University of Bath · [LinkedIn link]
